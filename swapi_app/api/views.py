@@ -1,22 +1,27 @@
+import os
+
+import petl as etl
+from petl.errors import FieldSelectionError
+
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from swapi_app.models import DatasetMetadata
-from swapi_app.tasks import read_data_from_csv
-from swapi_app import tasks
-from .serializers import DatasetMetadataSerializer
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-import os
-import petl as etl
+
+from swapi_app import tasks
+from swapi_app.models import MetaData
+from .serializers import CharacterSerializer, DictsSerializer, MetadataSerializer
+
 from swapi_project import settings
-from .models import MetaData
+
 
 
 @api_view(["GET"])
 def dataset_metadata_list(request):
-    metadata = DatasetMetadata.objects.all()
-    serializer = DatasetMetadataSerializer(metadata, many=True)
+    metadata = MetaData.objects.all()
+    serializer = MetadataSerializer(metadata, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -28,32 +33,58 @@ def fetch_and_process_data(request):
 
 @api_view(["GET"])
 def get_dataset_data(request, metadata_id, page):
-    metadata = MetaData.objects.get(id=metadata_id)
+    metadata = get_object_or_404(MetaData, id=metadata_id)
     start_file = (page - 1) * settings.FILES_PER_PAGE
     end_file = start_file + settings.FILES_PER_PAGE
     table = etl.empty()
 
-    for i in range(start_file, min(end_file, metadata.num_files)):
-        filename = f"{metadata.filename_prefix}{i + 1}.csv"
-        filepath = os.path.join(settings.BASE_DIR, "data", filename)
-        file_table = etl.fromcsv(filepath)
-        table = etl.cat(table, file_table)
+    filename_prefix = f"{metadata_id}_"
 
-    return Response(etl.dicts(table))
+    for i in range(start_file, min(end_file, metadata.num_files)):
+        filename = f"{filename_prefix}{i + 1}.csv"
+        filepath = os.path.join(settings.BASE_DIR, "media", "datasets", filename)
+
+        # Check if the file exists before attempting to read it
+        if os.path.exists(filepath):
+            file_table = etl.fromcsv(filepath)
+            table = etl.cat(table, file_table)
+        else:
+            # TODO: Logger Implementation and logging.
+            pass
+
+    # Serialize the data using CharacterSerializer
+    data = etl.dicts(table)
+    serializer = CharacterSerializer(data, many=True)
+
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def value_count(request, metadata_id, columns):
-    metadata = MetaData.objects.get(id=metadata_id)
+    metadata = get_object_or_404(MetaData, id=metadata_id)
     table = etl.empty()
 
     columns = columns.split(",")
+    filename_prefix = f"{metadata_id}_"
 
     for i in range(metadata.num_files):
-        filename = f"{metadata.filename_prefix}{i + 1}.csv"
-        filepath = os.path.join(settings.BASE_DIR, "data", filename)
-        file_table = etl.fromcsv(filepath)
+        filename = f"{filename_prefix}{i + 1}.csv"
+        filepath = os.path.join(settings.BASE_DIR, "media", "datasets", filename)
+
+        try:
+            file_table = etl.fromcsv(filepath)
+        except FileNotFoundError:
+            continue
+
         table = etl.cat(table, file_table)
 
-    table = etl.aggregate(table, key=columns, aggregation=len)
-    return Response(etl.dicts(table))
+    try:
+        table = etl.aggregate(table, key=columns, aggregation=len)
+        # Serialize the data using CharacterSerializer
+        data = etl.dicts(table)
+        serializer = DictsSerializer(data={"data": data})
+        serializer.is_valid()
+        return Response(serializer.data)
+
+    except FieldSelectionError as e:
+        raise ValidationError("Invalid Column Specified: %s" % (e.value))

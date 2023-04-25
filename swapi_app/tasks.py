@@ -5,10 +5,13 @@ import csv
 import os
 from swapi_project import settings
 from .models import MetaData
+from .cache import InMemoryCache
+
+cache = InMemoryCache()
 
 
 def fetch_characters():
-    url = "https://swapi.co/api/people/"
+    url = "https://swapi.dev/api/people/"
     characters = []
 
     while url:
@@ -19,41 +22,54 @@ def fetch_characters():
 
     return characters
 
+def fetch_homeworld_name(url):
+    if cache.has(url):
+        return cache.get(url)
+    else:
+        name = requests.get(url).json()["name"]
+        cache.set(url, name)
+        return name
+
 
 def process_characters(characters):
     table = etl.fromdicts(characters)
     table = etl.addfield(table, "date", lambda row: row["edited"].split("T")[0])
-    table = etl.convert(table, "homeworld", lambda url: requests.get(url).json()["name"])
+    table = etl.convert(table, "homeworld", fetch_homeworld_name)
 
     fields_to_keep = ["name", "height", "mass", "hair_color", "skin_color", "eye_color", "birth_year", "gender", "homeworld", "date"]
     table = etl.cut(table, *fields_to_keep)
 
-    return table
+    return table, len(characters)
 
 
 
-def save_data_to_csv(table, metadata):
-    num_files = -(-len(table) // settings.ROWS_PER_FILE)  # Ceiling division
-    filename_prefix = f"swapi_data_{metadata.id}_"
+def save_data_to_csv(table, table_length):
+    num_files = -(-table_length // settings.ROWS_PER_FILE)  # Ceiling division
+
+    # Create MetaData object with num_files value
+    metadata = MetaData.objects.create(num_files=num_files)
+    filename_prefix = f"{metadata.id}_"
 
     for i in range(num_files):
         start = i * settings.ROWS_PER_FILE
         end = start + settings.ROWS_PER_FILE
-        file_table = etl.rowlenseslice(table, start, end)
+
+        file_table = etl.rowslice(table, start, end)
+
         filename = f"{filename_prefix}{i + 1}.csv"
-        filepath = os.path.join(settings.BASE_DIR, "data", filename)
 
-        with open(filepath, "w", newline="", encoding="utf-8") as csvfile:
-            etl.tocsv(file_table, csvfile)
+        filepath = os.path.join(settings.BASE_DIR, "media", "datasets", filename)
 
-    metadata.filename_prefix = filename_prefix
-    metadata.num_files = num_files
+        # Create the media/datasets directory if it doesn't exist
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+        etl.tocsv(file_table, filepath, encoding="utf-8")
+
     metadata.save()
 
 
 def fetch_data():
     characters = fetch_characters()
-    processed_data = process_characters(characters)
-    metadata = MetaData.objects.create()
-
-    save_data_to_csv(processed_data, metadata)
+    
+    processed_data, table_length = process_characters(characters)
+    save_data_to_csv(processed_data, table_length)

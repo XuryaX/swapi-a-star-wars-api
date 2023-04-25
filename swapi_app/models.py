@@ -1,6 +1,7 @@
 from django.db import models
+from uuid import uuid4
 
 class MetaData(models.Model):
-    filename_prefix = models.CharField(max_length=255)
-    date = models.DateTimeField(auto_now_add=True)
-    num_files = models.PositiveIntegerField()
+    id = models.UUIDField(default=uuid4, editable=False, primary_key=True)
+    num_files = models.IntegerField(default=0)  # Provide a default value
+    created_at = models.DateTimeField(auto_now_add=True)

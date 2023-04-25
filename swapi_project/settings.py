@@ -111,7 +111,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-ROWS_PER_FILE = 1000
+ROWS_PER_FILE = 10
+FILES_PER_PAGE = ROWS_PER_FILE
 
 
 # Static files (CSS, JavaScript, Images)
