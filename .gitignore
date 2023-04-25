@@ -26,20 +26,12 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-__pycache__
 *.pyc
 *.pyo
 *.pyd
 *.sqlite3
 *.log
 *.pot
-*.pyc
-*.pyo
-*.pyd
-*.sqlite3
-*.log
-*.pot
-venv/
 *.DS_Store
 /media/
 
