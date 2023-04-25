@@ -1,0 +1,9 @@
+.container {
+    margin-top: 2rem;
+  }
+  
+  .table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
