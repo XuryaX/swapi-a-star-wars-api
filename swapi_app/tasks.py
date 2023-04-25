@@ -1,4 +1,3 @@
-# tasks.py
 import petl as etl
 import requests
 import csv
