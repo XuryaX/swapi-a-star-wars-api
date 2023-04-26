@@ -1,4 +1,4 @@
-# Swapi : A Star Wars API
+# SwapiEx: A Star Wars API Explorer
 
 ## Pre-requisites
 - Python 3.x
