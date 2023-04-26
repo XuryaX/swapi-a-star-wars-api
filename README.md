@@ -85,6 +85,9 @@ A page of data is loaded from memory and sent to the client. Only the page that 
 This function is similar to running the SQL query `select col_1,col_2,count(*) from table group by col_1,col_2`.
 The `petl` library is used for aggregation after reading the entire dataset.
 
+*Simplicity*
+For the sake of simplicity, I have not built additional layers for Business Objects, Abstraction acros Data Read etc.
+
 
 ### API Signatures
 The back-end provides the following API endpoints:
