@@ -1,0 +1,44 @@
+.dataset-card {
+    border: 1px solid black;
+    padding: 10px;
+    margin: 10px;
+    cursor: pointer;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    border: 1px solid black;
+    padding: 5px;
+  }
+  
+  .cell {
+    padding: 5px;
+  }
+
+  .grid .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    border-bottom: 1px solid #ccc;
+    padding: 0 10px;
+  }
+  
+  .grid .row:last-child {
+    border-bottom: none;
+  }
+  
+  .grid .cell {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  

@@ -60,7 +60,7 @@ ROOT_URLCONF = "swapi_project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "frontend")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -118,9 +118,10 @@ FILES_PER_PAGE = ROWS_PER_FILE
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend/dist/frontend')]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend'),
+]
 
 
 # Default primary key field type
