@@ -77,9 +77,11 @@ There are 2 functional requirements for exploration of data
 There are two functional requirements for exploring data:
 
 *Load data with pagination*
+
 A page of data is loaded from memory and sent to the client. Only the page that is requested is loaded into memory and sent to the user.
 
 *Value Count*
+
 This function is similar to running the SQL query `select col_1,col_2,count(*) from table group by col_1,col_2`.
 The `petl` library is used for aggregation after reading the entire dataset.
 
