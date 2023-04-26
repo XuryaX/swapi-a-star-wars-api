@@ -34,23 +34,21 @@ def fetch_and_process_data(request):
 @api_view(["GET"])
 def get_dataset_data(request, metadata_id, page):
     metadata = get_object_or_404(MetaData, id=metadata_id)
-    start_file = (page - 1) * settings.FILES_PER_PAGE
-    end_file = start_file + settings.FILES_PER_PAGE
+
     table = etl.empty()
 
     filename_prefix = f"{metadata_id}_"
 
-    for i in range(start_file, min(end_file, metadata.num_files)):
-        filename = f"{filename_prefix}{i + 1}.csv"
-        filepath = os.path.join(settings.BASE_DIR, "media", "datasets", filename)
+    filename = f"{filename_prefix}{page}.csv"
+    filepath = os.path.join(settings.BASE_DIR, "media", "datasets", filename)
 
-        # Check if the file exists before attempting to read it
-        if os.path.exists(filepath):
-            file_table = etl.fromcsv(filepath)
-            table = etl.cat(table, file_table)
-        else:
-            # TODO: Logger Implementation and logging.
-            pass
+    # Check if the file exists before attempting to read it
+    if os.path.exists(filepath):
+        file_table = etl.fromcsv(filepath)
+        table = etl.cat(table, file_table)
+    else:
+        # TODO: Logger Implementation and logging.
+        pass
 
     # Serialize the data using CharacterSerializer
     data = etl.dicts(table)

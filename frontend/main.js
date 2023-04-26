@@ -37,10 +37,13 @@ function createCellElement(text) {
   return cellElement;
 }
 
-function renderGrid(data, withCheckbox) {
-  gridElement.innerHTML = '';
-  const headerElement = createHeaderElement(Object.keys(data[0]), withCheckbox);
-  gridElement.appendChild(headerElement);
+function renderGrid(data, withCheckbox, scrolledLoad) {
+
+  if(!scrolledLoad) {
+    gridElement.innerHTML = '';
+    const headerElement = createHeaderElement(Object.keys(data[0]), withCheckbox);
+    gridElement.appendChild(headerElement);  
+  }
   data.forEach(row => {
     const rowElement = createRowElement(row);
     gridElement.appendChild(rowElement);
@@ -112,7 +115,7 @@ function showDatasetDetails(datasetId) {
       if (lastRowRect.bottom <= window.innerHeight && !isLoading && !isLastPage) {
         isLoading = true;
         currentPage += 1;
-        fetchData(datasetId, currentPage);
+        fetchData(datasetId, currentPage, true);
       }
     }
   }
@@ -124,7 +127,7 @@ function showDatasetDetails(datasetId) {
       fetch(`/api/explore/value_count/${datasetId}/${selectedColumns.join(',')}`)
         .then(response => response.json())
         .then(data => {
-          renderGrid(data['data'], false);
+          renderGrid(data['data'], false, false);
           isLoading = false;
         })
         .catch(error => console.error(error));
@@ -163,13 +166,13 @@ function showDatasetDetails(datasetId) {
   }
 }
 
-function fetchData(datasetId, page) {
+function fetchData(datasetId, page, scrolledPage) {
   isLoading = true;
   fetch(`/api/explore/${datasetId}/${page}`)
     .then(response => response.json())
     .then(data => {
       if (data.length > 0) {
-        renderGrid(data, true);
+        renderGrid(data, true, scrolledPage);
         isLoading = false;
       } else {
         isLastPage = true;
