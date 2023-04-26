@@ -94,13 +94,6 @@ function createRowElement(row) {
   return rowElement;
 }
 
-function createCellElement(text) {
-  const cellElement = document.createElement('div');
-  cellElement.classList.add('cell');
-  cellElement.innerText = text;
-  return cellElement;
-}
-
 function showDatasetDetails(datasetId) {
   currentPage = 1;
   isLastPage = false;
