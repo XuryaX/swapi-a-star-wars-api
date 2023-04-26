@@ -86,7 +86,7 @@ This function is similar to running the SQL query `select col_1,col_2,count(*) f
 The `petl` library is used for aggregation after reading the entire dataset.
 
 *Simplicity*
-For the sake of simplicity, I have not built additional layers for Business Objects, Abstraction acros Data Read etc.
+For the sake of simplicity, I have not built additional layers for Business Objects, Abstraction across Data Read etc.
 
 
 ### API Signatures
