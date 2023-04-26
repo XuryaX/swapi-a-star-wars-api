@@ -98,3 +98,4 @@ The back-end provides the following API endpoints:
 - To make a stable data service, we can setup a cronjob to fetch latest data from external server.
 - In Production environment we would probably be using a file-storage service like S3
 - We would probably want to use a cache that can be shared with multiple requests. We can fairly easily use Redis.
+- async i/o can be used to improve performance with parallel I/O.
